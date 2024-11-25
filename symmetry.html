@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Face Symmetry Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #1a1a2e;
+      color: #eaeaea;
+      display: flex;
+      justify-content: space-between;
+      gap: 20px; /* Add space between containers */
+      padding: 20px;
+    }
+
+    #instructions, #key {
+      flex: 1; /* Ensure both containers expand proportionally */
+      max-width: 30%; /* Limit width to prevent stretching */
+      background-color: #0f3460;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+      overflow: auto; /* Ensure vertical scrolling if content overflows */
+    }
+
+    #instructions h2, #key h2 {
+      color: #ffffff;
+      text-align: center;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.6);
+    }
+
+    #instructions p, #instructions ol, #instructions li, #key p {
+      color: #ffffff;
+      margin: 10px 0;
+    }
+
+    .instruction-image {
+      width: 150px;
+      height: 50px;
+      margin: 10px auto; /* Center images */
+      border: 2px solid #e94560;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(233, 69, 96, 0.8);
+      display: block; /* Ensures image doesn't expand the container horizontally */
+    }
+
+    #container {
+      flex: 2; /* Ensure main container takes up more space */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-color: #16213e;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    }
+
+    canvas {
+      border: 1px solid #0f3460;
+      background-color: #0f3460;
+      border-radius: 10px;
+      margin-top: 20px;
+    }
+
+    #symmetry {
+      margin-top: 20px;
+      font-weight: bold;
+      font-size: 24px;
+      color: #FFF000;
+      background-color: #1a1a2e;
+      padding: 10px 20px;
+      border-radius: 10px;
+      text-align: center;
+      box-shadow: 0 0 10px rgba(255, 240, 0, 0.8);
+    }
+
+    input[type="file"] {
+      background-color: #FFF000;
+      color: #1a1a2e;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    input[type="file"]:hover {
+      background-color: #ffeb3b;
+    }
+  </style>
+</head>
+<body>
+  <div id="instructions">
+    <h2>Face Symmetry Calculator</h2>
+      <strong>MUST READ: Resize & Crop your image to 500x500 for best results. This does not factor in lateral asymmetry (uneven: jaw, eyes, cheekbones)! Use a straight on photo, avoid lens distortion, keep a relaxed face. Instructions here:</strong>
+    <ol>
+      <li>Plot a point on the center of your hairline <small><small>(over for baldcells)</small></small></li>
+      <img src="https://media.discordapp.net/attachments/1050220506311299104/1310444822997368982/hairline.png?ex=67453e58&is=6743ecd8&hm=3731bc3ec103806b1cf90709f81d5c264645e4b71f04c91d6cebff462284921c&=&format=webp&quality=lossless" alt="Hairline Guide" class="instruction-image" style="width: 150px; height: 50px;">
+
+      <li>Plot a point on the center of your nasion</li>
+      <img src="https://media.discordapp.net/attachments/1050220506311299104/1310444823685234809/nasion.png?ex=67453e58&is=6743ecd8&hm=a1978ee022a4219dfc123b46de6c69dd92c9576e50126a86ac6c0d4fbe880018&=&format=webp&quality=lossless" alt="Nasion Guide" class="instruction-image" style="width: 150px; height: 50px;">
+
+      <li>Plot a point on the tip of your nose</li>
+      <img src="https://media.discordapp.net/attachments/1050220506311299104/1310444824167710801/nose-tip.png?ex=67453e58&is=6743ecd8&hm=9b7081fd6cc0e401f4bacc49c60006ac107d1ecba97003c7354164a96471cbb7&=&format=webp&quality=lossless" alt="Nose Tip Guide" class="instruction-image" style="width: 150px; height: 50px;">
+
+      <li>Plot a point on the center of your lips</li>
+      <img src="https://media.discordapp.net/attachments/1050220506311299104/1310444823362408529/lips.png?ex=67453e58&is=6743ecd8&hm=8db03b37e5c35032a05dc46784ac42b3f1ae6518ca3db70e9a48db4214bc2995&=&format=webp&quality=lossless" alt="Lips Guide" class="instruction-image" style="width: 150px; height: 50px;">
+
+      <li>Plot a point on the bottom center of your chin</li>
+      <img src="https://media.discordapp.net/attachments/1050220506311299104/1310444822577811536/chin.png?ex=67453e58&is=6743ecd8&hm=42b10eedba0b359a2c3ce87f75c5556e90d9ec61c72c667415bda774ed3dff1e&=&format=webp&quality=lossless" alt="Chin Guide" class="instruction-image" style="width: 150px; height: 50px;">
+    </ol>
+  </div>
+
+  <div id="container">
+    <input type="file" id="imageUpload" accept="image/*">
+    <canvas id="imageCanvas" width="500" height="500"></canvas>
+    <div id="symmetry">Symmetry: 100%</div>
+  </div>
+
+  <div id="key">
+    <h2>Key</h2>
+    <p style="color: #FFD700; text-shadow: 0 0 10px #FFD700, 0 0 20px #FFD700, 0 0 30px #FFC700;">100 - 98% • PSL God Symmetry</p>
+    <p style="color: #FFB30F;">97 - 95% • Symmetrical</p>
+    <p style="color: #FF931C;>94 - 92% • Average</p>
+    <p style="color: #FF8621;">91 - 89% • Slight Asymmetry</p>
+    <p style="color: #FF7827;">88 - 86% • Very Asymmetrical</p>
+    <p style="color: #FF5236;">85 - 70% • Monster</p>
+    <p style="color: #FF3E3E;">70% & Below • Impossible</p>
+      <h2>My Links</h2>
+<p>
+        <a href="https://www.youtube.com/@murtazatruth" target="_blank" style="color: #7FFF00; text-decoration: none; font-weight: bold;">
+	Home Page
+	</a>
+</p>
+        <a href="https://www.youtube.com/@murtazatruth" target="_blank" style="color: #7FFF00; text-decoration: none; font-weight: bold;">
+	YouTube
+	</a>
+  </div>
+
+  <script>
+    const imageUpload = document.getElementById('imageUpload');
+    const canvas = document.getElementById('imageCanvas');
+    const ctx = canvas.getContext('2d');
+    const symmetryDiv = document.getElementById('symmetry');
+    const points = [];
+    let image = null;
+
+    imageUpload.addEventListener('change', (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        const img = new Image();
+        img.onload = () => {
+          image = img; // Save the image object
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height); // Auto-scale image to 500x500
+        };
+        img.src = URL.createObjectURL(file);
+      }
+    });
+
+    canvas.addEventListener('click', (event) => {
+      const rect = canvas.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+
+      points.push({ x, y });
+
+      // Redraw the image and points
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (image) {
+        ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+      }
+
+      // Draw points
+      ctx.fillStyle = '#FFF000';
+      points.forEach(point => {
+        ctx.beginPath();
+        ctx.arc(point.x, point.y, 5, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // Draw lines between points
+      if (points.length > 1) {
+        ctx.strokeStyle = '#FFF000';
+        ctx.beginPath();
+        ctx.moveTo(points[0].x, points[0].y);
+        points.slice(1).forEach(point => ctx.lineTo(point.x, point.y));
+        ctx.stroke();
+      }
+
+      // Calculate symmetry
+      if (points.length > 2) {
+        calculateSymmetry();
+      } else {
+        symmetryDiv.textContent = "Symmetry: 100%";
+      }
+    });
+
+    function calculateSymmetry() {
+      if (points.length < 3) {
+        symmetryDiv.textContent = "Symmetry: 100%";
+        return;
+      }
+
+      let totalSymmetry = 0;
+      let invalidTurn = false;
+
+      for (let i = 1; i < points.length - 1; i++) {
+        const p1 = points[i - 1];
+        const p2 = points[i];
+        const p3 = points[i + 1];
+
+        // Calculate vectors
+        const v1 = { x: p2.x - p1.x, y: p2.y - p1.y };
+        const v2 = { x: p3.x - p2.x, y: p3.y - p2.y };
+
+        // Calculate the dot product and magnitude of vectors
+        const dotProduct = v1.x * v2.x + v1.y * v2.y;
+        const magV1 = Math.sqrt(v1.x * v1.x + v1.y * v1.y);
+        const magV2 = Math.sqrt(v2.x * v2.x + v2.y * v2.y);
+
+        // Calculate the angle in degrees
+        const angle = Math.acos(dotProduct / (magV1 * magV2)) * (180 / Math.PI);
+
+        // If angle is ≥ 90 degrees, invalidate the turn
+        if (angle >= 90) {
+          invalidTurn = true;
+          totalSymmetry += 0; // Turn contributes 0% accuracy
+        } else {
+          // Symmetry: closer to 0 degrees deviation = higher accuracy
+          const symmetry = Math.max(0, 100 - (angle / 45) * 100);
+          totalSymmetry += symmetry;
+        }
+      }
+
+      // Average symmetry if there are no invalid turns
+      const avgSymmetry = invalidTurn ? 0 : totalSymmetry / (points.length - 2);
+      symmetryDiv.textContent = `Symmetry: ${avgSymmetry.toFixed(2)}%`;
+    }
+  </script>
+</body>
+</html>
